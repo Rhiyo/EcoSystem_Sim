@@ -75,8 +75,14 @@ etc, to simulate creatures (autonomous agents) interacting with each other in a 
     in or around your grid location.
 
 
-## Creature Ideas
+## Creatures
 
- **What Makes A Creature:**
+ ### What Makes A Creature:
  
     A creature must be able to procreate, and must eventually die. Life can be prolonged via finding substinance but is still  inevitable. Must also have a form of location to find prey. Each creature should have a unique movement method and shape.
+    
+ ### Creature Ideas
+ 
+  **Spider:**
+    
+    Lives on web, randomly walks within vacinity of web. If anothre creatures enters the web its speed slows down by a percent and the spider will attempt an arrival steering to get in contact with it. If the spider gets in contact with the prey, it dies and the spider lives longer, if the creature leaves the web before the spider is in contact it survives.
