@@ -78,4 +78,5 @@ etc, to simulate creatures (autonomous agents) interacting with each other in a 
 ## Creature Ideas
 
  **What Makes A Creature:**
+ 
   A creature must be able to procreate, and must eventually die. Life can be prolonged via finding substinance but is still inevitable. Must also have a form of location to find prey. Each creature should have a unique movement method and shape.
