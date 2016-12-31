@@ -86,3 +86,8 @@ etc, to simulate creatures (autonomous agents) interacting with each other in a 
   **Spider:**
     
     Lives on web, randomly walks within vacinity of web. If anothre creatures enters the web its speed slows down by a percent and the spider will attempt an arrival steering to get in contact with it. If the spider gets in contact with the prey, it dies and the spider lives longer, if the creature leaves the web before the spider is in contact it survives.
+    
+    
+  **Ants:**
+    
+    Spawn out of ant nest, scout ant searches for food, when found, returns to next and then the ants march in a straight line towards the food.
