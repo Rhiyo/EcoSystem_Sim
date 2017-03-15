@@ -3,9 +3,8 @@
 This is a simulation of an Ecosystem on a 2d plane. The purpose of this project is to use many different algorithms, libaries,
 etc, to simulate creatures (autonomous agents) interacting with each other in a simulated environment. This project is being made using the 'Nature of Code' textbook as a guideline. The additions will follow the chapters of the book
 
-## Plan
-
- **Phase 1
+## Plan:
+ **Phase 1:**
  
  -Develop Simple UI for interactivity
   --Play, Quit, Reset, Pause buttons
