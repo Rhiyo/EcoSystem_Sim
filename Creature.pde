@@ -38,6 +38,7 @@ class Creature extends Edible {
     
   }
   
+  /*
   void update(){
   
     //Add noise force
@@ -45,12 +46,12 @@ class Creature extends Edible {
       map(noise(noiseTime.y), 0, 1, -acelSpeed, acelSpeed));
     //applyForce(noiseAccel);
     
-    /*/Limit Box2d velocity
+    /Limit Box2d velocity
     Vec2 b2velocity = body.getLinearVelocity();
     float speed = b2velocity.length();
     if (speed > topSpeed)
       body.setLinearVelocity(b2velocity.mul(topSpeed / speed));
-      */
+      
       
     
 
@@ -66,7 +67,7 @@ class Creature extends Edible {
       director.clearVelocity();
       director.addVelocity(velocity.scale(topSpeed));
     }
-    */
+    
     
     //Creature follow director
     //Vec2 toxi2Box2d = box2d.coordPixelsToWorld(director.x,director.y);
@@ -74,17 +75,16 @@ class Creature extends Edible {
     
     Vec2 pixelCoord = box2d.coordWorldToPixels(handle.getTarget().x,handle.getTarget().y);
     Vec2 bod = box2d.getBodyPixelCoord(body);
-    println(mouseX + " " + mouseY + " - " + pixelCoord.x + " " + pixelCoord.y + " - " + bod.x + " " + bod.y);
 
     /*
     stroke(240);
     line(box2d.getBodyPixelCoord(body).x,box2d.getBodyPixelCoord(body).y,director.x,director.y);
     point(director.x,director.y);
     println(box2d.getBodyPixelCoord(body).x+" " + box2d.getBodyPixelCoord(body).x + " - " + director.x + " " + director.y );
-    */
+    
   }
   
-  /*
+  
   void display(){
     pushMatrix();
     translate(location.x, location.y);
@@ -109,8 +109,8 @@ class Creature extends Edible {
   }
   
   void applyForce(PVector force){
-   Vec2D f = new Vec2D(force.x/mass,force.y/mass);
-   director.addForce(f);
+   //Vec2D f = new Vec2D(force.x/mass,force.y/mass);
+   //director.addForce(f);
   }
   
   //Takes in a location that the creature is attracted to

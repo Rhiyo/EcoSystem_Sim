@@ -23,6 +23,7 @@ import org.jbox2d.common.*;
 import toxi.physics2d.*;
 import toxi.physics2d.behaviors.*;
 import toxi.geom.*;
+import g4p_controls.*;
 
 public static final PVector FOOD_COLOUR = new PVector(255,165,0);
 public static final PVector HERB_COLOUR = new PVector(0,255,0);
@@ -45,11 +46,19 @@ float currentHerbivore;
 ArrayList<Object> worldObjs;
 ArrayList<ParticleSystem> systems;
 
+//UI
+GWindow wdwControls;
+GButton btnPlay;
+GButton btnReset;
+GButton btnQuit;
+
+//Simulation vars
+boolean playing = true;
+
 void settings() {
   size(width, height);
   
 }
-
 void setup(){
   background(220);
   random = new Random();
@@ -62,41 +71,25 @@ void setup(){
   box2d.listenForCollisions();
   box2d.setGravity(0,0);
   
-  //Toxi clubs set up
+  //Toxi cliubs set up
   physics = new VerletPhysics2D();
   physics.setWorldBounds(new Rect(0,0,width,height));
-  spawnHerbivore();     
+  spawnSpider();  
+  
+  //GUI
+  createGUI();
 }
 
 void draw(){
-  box2d.step();
-  physics.update();
+  
   background(20);
   
-  /*
-  //Spawn food
-  if(currentFoodTime >= Food.SPAWN_RATE){
-    spawnFood();
-    currentFoodTime = 0;
+  //Logic
+  if(playing){
+    box2d.step();
+    physics.update();
   }
-  currentFoodTime += 0.01; 
-    
-  //Spawn Herbivore
-  if(currentHerbivore >= creatureSpawnRate/2){
-    spawnHerbivore();
-    currentHerbivore = 0;
-  }
-  currentHerbivore += 0.01;
   
-  //Spawn carnivore
-  if(currentCarnivore >= creatureSpawnRate){
-    spawnCarnivore();
-    currentCarnivore = 0;
-  }
-  currentCarnivore += 0.01;
-  */
-  
-       
   //Iterate through objects to update and destroy
   Iterator<Object> it = worldObjs.iterator();
   
@@ -122,7 +115,8 @@ void draw(){
     }
     
     //If  not destroyed, update and display.
-    object.update();
+    if(playing)
+      object.update();
     object.display();
   }
   
@@ -142,6 +136,40 @@ void draw(){
   
 }
 
+void createGUI(){
+  
+  wdwControls =  GWindow.getWindow(this, "My Window", 100, 50, 480, 70, JAVA2D);
+  btnPlay = new GButton(wdwControls, 10, 10, 50, 50, ">");
+  btnReset = new GButton(wdwControls, 70, 10, 50, 50, "Reset");
+  btnQuit = new GButton(wdwControls, 130, 10, 50, 50, "Quit");
+}
+
+void handleButtonEvents(GButton button, GEvent event) {
+  if (button == btnPlay && event == GEvent.CLICKED) {
+    playing = !playing;
+    println(playing ? "Playing" : "Paused");
+  }
+  if (button == btnReset && event == GEvent.CLICKED) {
+    resetSimulation();
+    println("Simulation reset.");
+  }
+  if (button == btnQuit && event == GEvent.CLICKED) {
+    exit();
+  }
+}
+
+//Resets the currently active simulation
+void resetSimulation(){
+  //purgeCreatures();
+  worldObjs.clear();
+}
+
+//destroys all creatures
+void purgeCreatures(){
+  
+}
+
+
 //Spawns one food item
 void spawnFood(){
  Food foodObj = new Food(random(width),random(height), 1, FOOD_COLOUR); 
@@ -155,11 +183,11 @@ void spawnCarnivore(){
   worldObjs.add(snake);
 }
 
-//Spawns a herbivore
-void spawnHerbivore(){
-  Creature butterfly = new Herbivore(random(0,width),random(0,height),3,HERB_COLOUR); 
-  butterfly.noiseRate = new PVector(0.01, 0.01);
-  worldObjs.add(butterfly);
+//Spawns a Spider
+void spawnSpider(){
+  Spider spider = new Spider(width/2,random(height/2),3,HERB_COLOUR); 
+  //butterfly.noiseRate = new PVector(0.01, 0.01);
+  worldObjs.add(spider);
 }
 
 //Gets  next starting point for noise, so each dimension starts differently.
