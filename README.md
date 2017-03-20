@@ -3,6 +3,24 @@
 This is a simulation of an Ecosystem on a 2d plane. The purpose of this project is to use many different algorithms, libaries,
 etc, to simulate creatures (autonomous agents) interacting with each other in a simulated environment. This project is being made using the 'Nature of Code' textbook as a guideline. The additions will follow the chapters of the book
 
+## Plan:
+ **Phase 1:**
+ 
+ -Develop Simple UI for interactivity
+  --Play, Quit, Reset, Pause buttons
+  
+ -Build 3 Interactive distrinct creatures
+  --Distinct locomotions, bodies, abilities
+  
+ -Debug UI
+  -Create a debug UI to spawn, destory, select creatures
+  
+ -Develop Spawning process for each creature
+  --Balancining of spawn to keep the ecosystem going
+  
+ -Polish, end of phase 1
+
+
 ## Things To Work With:
   **Randomization:**
   
