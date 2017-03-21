@@ -185,7 +185,7 @@ void spawnCarnivore(){
 
 //Spawns a Spider
 void spawnSpider(){
-  Spider spider = new Spider(width/2,random(height/2),3,HERB_COLOUR); 
+  Spider spider = new Spider(width/2,height/2,3,HERB_COLOUR); 
   //butterfly.noiseRate = new PVector(0.01, 0.01);
   worldObjs.add(spider);
 }

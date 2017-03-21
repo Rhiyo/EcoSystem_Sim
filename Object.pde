@@ -40,20 +40,18 @@ abstract class Object{
     rotate(-body.getAngle());
     stroke(objColour.x,objColour.y,objColour.z);
     fill(objColour.x,objColour.y,objColour.z);
-    //ellipse(pos.x,pos.y,5,5);
+    
     Fixture f = body.getFixtureList();
     while(f != null)
     {
-      println("HELLO!1");
       switch (f.getType())
       {
         case CIRCLE:
         {
-          println("HELLO!");
           CircleShape shape = (CircleShape)f.getShape();
           float r = box2d.scalarWorldToPixels(shape.m_radius);
           Vec2 shapePos = box2d.vectorWorldToPixels(shape.m_p);
-          ellipse(pos.x-r/2+shapePos.x,pos.y-r/2+shapePos.y,r*2,r*2);
+          ellipse(-r/2+shapePos.x,-r/2+shapePos.y,r*2,r*2);
         }
       }
       f = f.getNext();
