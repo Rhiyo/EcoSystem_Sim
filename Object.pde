@@ -51,7 +51,7 @@ abstract class Object{
           CircleShape shape = (CircleShape)f.getShape();
           float r = box2d.scalarWorldToPixels(shape.m_radius);
           Vec2 shapePos = box2d.vectorWorldToPixels(shape.m_p);
-          ellipse(-r/2+shapePos.x,-r/2+shapePos.y,r*2,r*2);
+          ellipse(shapePos.x,shapePos.y,r*2,r*2);
         }
       }
       f = f.getNext();

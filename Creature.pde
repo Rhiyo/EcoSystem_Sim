@@ -130,6 +130,19 @@ class Creature extends Edible {
     */
   }
   
+  //Draws a creatures legs
+  
+  //PUT TOXICLIPS IN LEGS TO MAKE WEB MOVE
+  void drawLeg(Vec2 pos, float angle, float radius,float length, float t){
+    pushMatrix();
+    rotate(-angle);
+    translate(0,radius);
+    line(0,0,sin(t),length/3);
+    line(sin(t),length/3,sin(t)*2,2*length/3);
+    line(sin(t)*2,2*length/3,sin(t)*3,length);
+    popMatrix();
+  }
+  
   void destroy(){
    super.destroy();
    physics.removeParticle(director);
