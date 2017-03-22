@@ -78,7 +78,11 @@ void setup(){
   
   //GUI
   createGUI();
+  
+  web = new Web();
 }
+
+Web web;
 
 void draw(){
   
@@ -89,7 +93,7 @@ void draw(){
     box2d.step();
     physics.update();
   }
-  
+  web.display();
   //Iterate through objects to update and destroy
   Iterator<Object> it = worldObjs.iterator();
   

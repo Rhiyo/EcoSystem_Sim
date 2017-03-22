@@ -56,13 +56,13 @@ class Spider extends Creature{
     float legAngle = PI/6;
     float legLength = 12;
     for(int i = 1; i < 5; i++){
-      drawLeg(pos, i*legAngle, 5, legLength, legTime+legOffset[i-1]);
-      drawLeg(pos, -i*legAngle, 5, legLength, -(legTime+legOffset[i+3]));
+      drawLeg(pos, i*legAngle, 5, legLength, legTime+legOffset[i-1], 3);
+      drawLeg(pos, -i*legAngle, 5, legLength, -(legTime+legOffset[i+3]), 3);
     }
     
     //Draw fangs
-    drawLeg(pos, 8*PI/9, 5, 3, 0);
-    drawLeg(pos, -8*PI/9, 5, 3, 0);
+    drawLeg(pos, 8*PI/9, 5, 3, 0, 3);
+    drawLeg(pos, -8*PI/9, 5, 3, 0, 3);
     
     popMatrix();
     

@@ -133,13 +133,22 @@ class Creature extends Edible {
   //Draws a creatures legs
   
   //PUT TOXICLIPS IN LEGS TO MAKE WEB MOVE
-  void drawLeg(Vec2 pos, float angle, float radius,float length, float t){
+  //Draws a leg
+  //pos = position of body
+  //angle = current angle of leg
+  //radius = distance from body
+  //legnth = of leg
+  //t = time in animation
+  //joints = amount of joints in legg
+  void drawLeg(Vec2 pos, float angle, float radius,float length, float t, float joints){
     pushMatrix();
     rotate(-angle);
     translate(0,radius);
-    line(0,0,sin(t),length/3);
-    line(sin(t),length/3,sin(t)*2,2*length/3);
-    line(sin(t)*2,2*length/3,sin(t)*3,length);
+    
+    //Draw leg at length with number of joints to bend at
+    for(int i = 0; i < joints; i++){
+      line(sin(t)*i, i*length/joints,sin(t)*(i-1),length/joints*(i-1));
+    }
     popMatrix();
   }
   
