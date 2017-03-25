@@ -1,6 +1,6 @@
 abstract class Object{
   Body body;
-  //PVector location;
+  PVector location;
   
   float mass;
   
@@ -10,34 +10,22 @@ abstract class Object{
     //location = new PVector(x,y);
     mass = m;
     objColour = c.get();
-    
-    BodyDef bd = new BodyDef();
-    bd.type = BodyType.DYNAMIC;
-    bd.position.set(box2d.coordPixelsToWorld(x,y));
-    body = box2d.createBody(bd);
-    body.setUserData(this);
-    
-    CircleShape cs = new CircleShape();
-    cs.m_radius = box2d.scalarPixelsToWorld(m/2);
-    
-    FixtureDef fd = new FixtureDef();
-    fd.shape=cs;
-    fd.density = 1;
-    fd.friction = 0.3;
-    fd.restitution = 0.5f;
-    
-    Fixture f = body.createFixture(fd);
-    
+ 
   }
   
   void update(){
+  }
+  
+  float getAngle(){
+    return atan2(box2d.vectorWorldToPixels(body.getLinearVelocity()).y,box2d.vectorWorldToPixels(body.getLinearVelocity()).x);
   }
   
   void display(){
     Vec2 pos = box2d.getBodyPixelCoord(body);
     pushMatrix();
     translate(pos.x, pos.y);
-    rotate(-body.getAngle());
+    //println(-body.getAngle());
+    rotate(getAngle());
     stroke(objColour.x,objColour.y,objColour.z);
     fill(objColour.x,objColour.y,objColour.z);
     

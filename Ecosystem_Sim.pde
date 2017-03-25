@@ -44,6 +44,7 @@ float currentCarnivore = 2.5f;
 float currentHerbivore;
 
 ArrayList<Object> worldObjs;
+ArrayList<Terrain> terrain;
 ArrayList<ParticleSystem> systems;
 
 //UI
@@ -51,6 +52,9 @@ GWindow wdwControls;
 GButton btnPlay;
 GButton btnReset;
 GButton btnQuit;
+
+//Testing Variables
+TestCreature tc;
 
 //Simulation vars
 boolean playing = true;
@@ -63,6 +67,7 @@ void setup(){
   background(220);
   random = new Random();
   worldObjs = new ArrayList<Object>();
+  terrain = new ArrayList<Terrain>();
   systems = new ArrayList<ParticleSystem>();
   
   //Box2D set up
@@ -70,6 +75,10 @@ void setup(){
   box2d.createWorld();
   box2d.listenForCollisions();
   box2d.setGravity(0,0);
+  
+  //Toxiclibs
+  physics = new VerletPhysics2D();
+  physics.setWorldBounds(new Rect(0,0,width,height));
   
   //Toxi cliubs set up
   physics = new VerletPhysics2D();
@@ -79,23 +88,28 @@ void setup(){
   //GUI
   createGUI();
   
-  web = new Web();
+  //Test declarations
+  tc = new TestCreature(0,0,1, new PVector(255,0,0));
+  
+  worldObjs.add(tc);
 }
 
-Web web;
+//Web web;
 
 void draw(){
   
   background(20);
   
-  //Logic
   if(playing){
     box2d.step();
     physics.update();
   }
-  web.display();
+  
   //Iterate through objects to update and destroy
   Iterator<Object> it = worldObjs.iterator();
+  
+  for(Terrain t : terrain)
+    t.display();
   
   while(it.hasNext()){
     Object object = it.next();
@@ -121,6 +135,7 @@ void draw(){
     //If  not destroyed, update and display.
     if(playing)
       object.update();
+        
     object.display();
   }
   
@@ -135,8 +150,6 @@ void draw(){
       itps.remove();
     }
   }
-  
-
   
 }
 
@@ -180,13 +193,6 @@ void spawnFood(){
  worldObjs.add(foodObj);
 }
 
-//Spawns a carnivore
-void spawnCarnivore(){
-  Creature snake = new Carnivore(random(0,width),random(0,height),6,CARN_COLOUR); 
-  snake.noiseRate = new PVector(0.02, 0.05);
-  worldObjs.add(snake);
-}
-
 //Spawns a Spider
 void spawnSpider(){
   Spider spider = new Spider(width/2,height/2,3,HERB_COLOUR); 
@@ -201,15 +207,7 @@ int getN(){
   return noiseTime;
 }
 
-//Use this on two different objects, check to see if there is a collision
-void checkContact(Object o1, Object o2){
-  if(o1 instanceof Carnivore && o2 instanceof Herbivore){
-    ((Edible)o2).eaten = true;
-  }
-  if(o1 instanceof Herbivore && o2 instanceof Food){
-    ((Edible)o2).eaten = true;
-  }
-}
+//BOX 2D methods
 
 void beginContact(Contact cp){
   Fixture f1 = cp.getFixtureA();
@@ -218,13 +216,35 @@ void beginContact(Contact cp){
   Body b1 = f1.getBody();
   Body b2 = f2.getBody();
   
-  Object o1 = (Object)b1.getUserData();
-  Object o2 = (Object)b2.getUserData();
-  
-  checkContact(o1,o2);
-  checkContact(o2,o1);
+  checkContact(b1,b2);
+  checkContact(b2,b1);
 }
 
 void endContact(Contact cp){
+  Fixture f1 = cp.getFixtureA();
+  Fixture f2 = cp.getFixtureB();
   
+  Body b1 = f1.getBody();
+  Body b2 = f2.getBody();
+  
+  checkEndContact(b1,b2);
+  checkEndContact(b2,b1);
+}
+
+//Use this on two different objects, check to see if there is a collision
+void checkContact(Body o1, Body o2){
+  
+  //CREATURE > WEB
+  if(o1.getUserData() instanceof Object && o2.getUserData() instanceof Web){
+    ((Web)o2.getUserData()).addInside((Object)o1.getUserData());
+    return;
+  }
+}
+
+//Use these to check both objects that have finished colliding
+void checkEndContact(Body o1, Body o2){
+  if(o1.getUserData() instanceof Object && o2.getUserData() instanceof Web){
+    ((Web)o2.getUserData()).removeInside((Object)o1.getUserData());
+    return;
+  }
 }

@@ -1,43 +1,28 @@
 class Creature extends Edible {
   //PVector acceleration;
   //PVector velocity;
-  PVector noiseTime;
+
   //float angle;
   
-  public PVector noiseRate;
-  public float acelSpeed = 1;
-  public float topSpeed;
-  public float mass = 3;
-  public float foodSight = 50;
-  public float hunger;
-  VerletParticle2D director; //Guides the creature where to go
-  MouseJoint handle;
+  float acelSpeed = 1;
+  float topSpeed, topForce;
+  float mass = 3;
+  
+  Appendage[] appendages;
   
   Creature(float x, float y, float m, PVector c){
     super(x,y,m,c);
-    //velocity = new PVector(0,0);
     //acceleration = new PVector(0,0);
-    noiseRate = new PVector(.05,.05);
-    noiseTime = new PVector(getN(),getN());
-    topSpeed = 2;
-    
-    director = new VerletParticle2D(x,y);
-    physics.addParticle(director);
-    
-    MouseJointDef md = new MouseJointDef();
-    
-    md.bodyA = box2d.getGroundBody();
-    md.bodyB = body;
-    
-    md.maxForce = 5000;
-    md.frequencyHz = 5;
-    md.dampingRatio = 0.9;
-    md.target.set(box2d.coordPixelsToWorld(mouseX,mouseY));
-    
-    handle = (MouseJoint) box2d.world.createJoint(md);
-    
+
+    topSpeed = 80;
+    topForce = 100;
+   
   }
   
+  
+  void update(){
+     
+  }
   /*
   void update(){
   
@@ -68,36 +53,9 @@ class Creature extends Edible {
       director.addVelocity(velocity.scale(topSpeed));
     }
     
-    
-    //Creature follow director
-    //Vec2 toxi2Box2d = box2d.coordPixelsToWorld(director.x,director.y);
-    handle.setTarget(box2d.coordPixelsToWorld(mouseX,mouseY));
-    
-    Vec2 pixelCoord = box2d.coordWorldToPixels(handle.getTarget().x,handle.getTarget().y);
-    Vec2 bod = box2d.getBodyPixelCoord(body);
-
-    /*
-    stroke(240);
-    line(box2d.getBodyPixelCoord(body).x,box2d.getBodyPixelCoord(body).y,director.x,director.y);
-    point(director.x,director.y);
-    println(box2d.getBodyPixelCoord(body).x+" " + box2d.getBodyPixelCoord(body).x + " - " + director.x + " " + director.y );
-    
-  }
+  */  
   
-  
-  void display(){
-    pushMatrix();
-    translate(location.x, location.y);
-
-    rotate(atan2(velocity.y,velocity.x));
- 
-    strokeWeight(mass*creatureScale);
-    stroke(objColour.x,objColour.y,objColour.z);
-    point(0,0);
-    popMatrix();
-  }
-  */
-  
+  //Makes sure the creature stays within the bounds of the level
   float boundCheck(float check, int max){
     if(check > max){ 
       check-=max;
@@ -108,12 +66,43 @@ class Creature extends Edible {
     return check;
   }
   
+  //  STEERING METHODS
+  
   void applyForce(PVector force){
    //Vec2D f = new Vec2D(force.x/mass,force.y/mass);
    //director.addForce(f);
   }
   
-  //Takes in a location that the creature is attracted to
+  //Move with precision towards a target
+  void arrive(Vec2 target){
+    
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    
+    float closeEnough = 5;
+    if(target.sub(pos).length() < closeEnough)
+      return;
+    //The cut off distance of going full speed
+    float cutOff = 100;
+    
+    Vec2 desired = target.sub(pos);
+    
+    float d = desired.length();
+    desired.normalize();
+    if(d<cutOff){
+      float m = map(d,0,cutOff,0,topSpeed);
+      desired.mulLocal(m);
+    }else{
+      desired.mulLocal(topSpeed);
+    }
+    
+    Vec2 steer = desired.sub(box2d.vectorWorldToPixels(body.getLinearVelocity()));
+    Tools.limit(steer, topForce);
+    
+    body.applyForce(box2d.vectorPixelsToWorld(steer), body.getWorldCenter());
+    
+  }
+  
+  /*/Takes in a location that the creature is attracted to
   void attractedTo(Object object){
     /*PVector force = PVector.sub(object.location,location);
     float distance = force.mag();
@@ -127,33 +116,11 @@ class Creature extends Edible {
     force.mult(strength);
     
     applyForce(force);
-    */
-  }
+    *
+  }*/
   
-  //Draws a creatures legs
-  
-  //PUT TOXICLIPS IN LEGS TO MAKE WEB MOVE
-  //Draws a leg
-  //pos = position of body
-  //angle = current angle of leg
-  //radius = distance from body
-  //legnth = of leg
-  //t = time in animation
-  //joints = amount of joints in legg
-  void drawLeg(Vec2 pos, float angle, float radius,float length, float t, float joints){
-    pushMatrix();
-    rotate(-angle);
-    translate(0,radius);
-    
-    //Draw leg at length with number of joints to bend at
-    for(int i = 0; i < joints; i++){
-      line(sin(t)*i, i*length/joints,sin(t)*(i-1),length/joints*(i-1));
-    }
-    popMatrix();
-  }
-  
+  //Destroys the creature
   void destroy(){
    super.destroy();
-   physics.removeParticle(director);
   }
 }
