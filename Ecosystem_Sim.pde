@@ -92,6 +92,9 @@ void setup(){
   tc = new TestCreature(0,0,1, new PVector(255,0,0));
   
   worldObjs.add(tc);
+  
+  AntHill antHill = new AntHill();
+  terrain.add(antHill);
 }
 
 //Web web;

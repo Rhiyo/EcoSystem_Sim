@@ -134,7 +134,7 @@ class Web extends Terrain{
   
   void display(){
     super.display();
-    stroke(255,255,255);
+    stroke(200,200,200);
     VerletParticle2D c;
     
     for(int i = 0; i < detail.y;i++){      
