@@ -59,6 +59,8 @@ TestCreature tc;
 //Simulation vars
 boolean playing = true;
 
+float perlin; //So creatures get different numbers
+
 void settings() {
   size(width, height);
   
@@ -93,8 +95,9 @@ void setup(){
   
   worldObjs.add(tc);
   
-  AntHill antHill = new AntHill();
+  AntHill antHill = new AntHill(3*width/4,3*height/4);
   terrain.add(antHill);
+  terrain.add(new AntHill(width/4,2.5*height/4));
 }
 
 //Web web;
@@ -104,8 +107,10 @@ void draw(){
   background(20);
   
   if(playing){
+    for(Terrain t : terrain)
+      t.update();
     box2d.step();
-    physics.update();
+    physics.update(); 
   }
   
   //Iterate through objects to update and destroy
@@ -198,9 +203,11 @@ void spawnFood(){
 
 //Spawns a Spider
 void spawnSpider(){
-  Spider spider = new Spider(width/2,height/2,3,HERB_COLOUR); 
+  Spider spider = new Spider(width/2,height/2,3,HERB_COLOUR);
+  
   //butterfly.noiseRate = new PVector(0.01, 0.01);
   worldObjs.add(spider);
+  //worldObjs.add(ant);
 }
 
 //Gets  next starting point for noise, so each dimension starts differently.
@@ -250,4 +257,9 @@ void checkEndContact(Body o1, Body o2){
     ((Web)o2.getUserData()).removeInside((Object)o1.getUserData());
     return;
   }
+}
+
+float getPerlin(){
+  
+  return perlin+=1000;
 }

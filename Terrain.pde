@@ -3,6 +3,10 @@ class Terrain{
     
   }
   
+  void update(){
+  
+  }
+  
   void display(){
     
   }

@@ -6,11 +6,13 @@ class AntHill extends Terrain{
   float yrad;
   int detail = 6;
   float angle;
+  float t; 
+  float spawnRate = 5;
   Vec2 pos;
   Vec3 colour;
   Vec2[] ranOS;
-  AntHill(){
-    pos = new Vec2(3*width/4,3*height/4);
+  AntHill(float x, float y){
+    pos = new Vec2(x,y);
     colour = new Vec3(27,18,9);
     
     detail = int(6*radius/DEFAULT_RADIUS);
@@ -24,6 +26,16 @@ class AntHill extends Terrain{
       
       ranOS[i] = new Vec2(random(-offset,offset),random(-offset,offset));
     }
+  }
+  
+  void update(){
+    t+=0.01;
+    if(t < spawnRate)
+      return;
+      
+     Ant ant = new Ant(pos.x,pos.y,3,new PVector(125,125,255));
+     worldObjs.add(ant);
+     t = t-spawnRate;
   }
   
   void display(){

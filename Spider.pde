@@ -26,6 +26,7 @@ class Spider extends Creature{
     
     behaviour = SpiderBehaviour.CALM;
     
+    //Build body using Box2D
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
     bd.position.set(box2d.coordPixelsToWorld(x,y));
@@ -56,7 +57,7 @@ class Spider extends Creature{
     
     body.createFixture(fd);
     
-    //Offset to give the legs a more natural not perfect position
+    //Offset to give the legs a more natural imperfect position
     legOffset = new float[8];
     
     for(int i =0; i < 8; i++){

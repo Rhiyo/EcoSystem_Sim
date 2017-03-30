@@ -68,9 +68,8 @@ class Creature extends Edible {
   
   //  STEERING METHODS
   
-  void applyForce(PVector force){
-   //Vec2D f = new Vec2D(force.x/mass,force.y/mass);
-   //director.addForce(f);
+  void applyForce(Vec2 force){
+   body.applyForce(box2d.vectorPixelsToWorld(force), body.getWorldCenter());
   }
   
   //Move with precision towards a target
@@ -98,7 +97,7 @@ class Creature extends Edible {
     Vec2 steer = desired.sub(box2d.vectorWorldToPixels(body.getLinearVelocity()));
     Tools.limit(steer, topForce);
     
-    body.applyForce(box2d.vectorPixelsToWorld(steer), body.getWorldCenter());
+    applyForce(steer);
     
   }
   
