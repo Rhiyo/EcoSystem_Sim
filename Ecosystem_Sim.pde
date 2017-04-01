@@ -61,10 +61,14 @@ boolean playing = true;
 
 float perlin; //So creatures get different numbers
 
+int bg[][];
+
 void settings() {
   size(width, height);
   
 }
+
+
 void setup(){
   background(220);
   random = new Random();
@@ -98,14 +102,45 @@ void setup(){
   AntHill antHill = new AntHill(3*width/4,3*height/4);
   terrain.add(antHill);
   terrain.add(new AntHill(width/4,2.5*height/4));
+  
+  //noiseDetail(1,0.5);
+  float xoff = 0.0;
+  bg = new int[width][height]; 
+  for (int x = 0; x < width; x++) {
+    float yoff = 0.0;
+ 
+    for (int y = 0; y < height; y++) {
+
+      float bright = noise(xoff,yoff);
+
+      if(bright < 0.3){
+        bg[x][y] = color(40*bright,30*bright,10*bright);  
+      }else
+        bg[x][y] = color(30*bright,40*bright,10*bright);
+
+      yoff += 0.009;
+    }
+    xoff += 0.009;
+  }
 }
 
 //Web web;
 
 void draw(){
+  //background(20);
   
-  background(20);
+  loadPixels();
   
+  for (int x = 0; x < width; x++) {
+
+    for (int y = 0; y < height; y++) {
+
+      pixels[x+y*width] = bg[x][y];
+    }
+  }
+  updatePixels();
+  
+  point(1,1);
   if(playing){
     for(Terrain t : terrain)
       t.update();
