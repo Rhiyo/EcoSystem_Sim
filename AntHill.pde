@@ -8,6 +8,8 @@ class AntHill extends Terrain{
   float angle;
   float t; 
   float spawnRate = 5;
+  float maxAnts = 7;
+  float currentAnts = 0;
   Vec2 pos;
   Vec3 colour;
   Vec2[] ranOS;
@@ -29,11 +31,15 @@ class AntHill extends Terrain{
   }
   
   void update(){
+    if(currentAnts >= maxAnts)
+      return;
     t+=0.01;
     if(t < spawnRate)
       return;
-      
-     Ant ant = new Ant(pos.x,pos.y,3,new PVector(125,125,255));
+     
+     currentAnts++;
+     println("Ants: " + currentAnts);
+     Ant ant = new Ant(pos.x,pos.y,3,new PVector(125,125,255),this);
      worldObjs.add(ant);
      t = t-spawnRate;
   }

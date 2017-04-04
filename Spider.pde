@@ -1,3 +1,10 @@
+/*
+
+  For Utility:
+  When severely hungry, goes outside of web hunting for food
+  When full maturaty, searches for mate (female eats male, gender randomly chosen)
+*/
+
 public enum SpiderBehaviour{
   CHASING,
   CALM

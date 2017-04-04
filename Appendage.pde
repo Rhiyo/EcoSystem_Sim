@@ -57,4 +57,10 @@ class Appendage{
     }
     
   }
+  
+  void destroy(){
+    for(VerletParticle2D p : particles){
+      physics.removeParticle(p);
+    }
+  }
 }

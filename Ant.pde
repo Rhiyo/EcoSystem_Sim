@@ -5,6 +5,12 @@
   much large to food
   bin-lattice searching
   
+  For utility:
+  When with others, stronger desire to try and eat big creatures
+  Queen's wishes weight higher than own
+  
+  Example: Attack spider for food: Queen's Hunger + Own Hunger + Surrounding Ants
+  
 */
 
 class Ant extends Creature{
@@ -12,12 +18,17 @@ class Ant extends Creature{
   float[] legOffset;
   float legTime = 0;
   float tx, ty;
+  AntHill home;
   
-  Ant(float x, float y, float m, PVector c){
+  Food foundFood;
+  
+  Ant(float x, float y, float m, PVector c, AntHill home){
     super(x,y,m,c);
-    
+    maxHunger = maxHunger/2;
     tx = getPerlin();
     ty = getPerlin();
+    
+    this.home = home;
     
     //Build body using Box2D
     BodyDef bd = new BodyDef();
@@ -78,6 +89,10 @@ class Ant extends Creature{
       appendages[i-1] = new Appendage(box2d.getBodyPixelCoord(body), i*legAngle, 5, legLength, legTime+legOffset[i-1], 3);
       appendages[i+2] = new Appendage(box2d.getBodyPixelCoord(body), -i*legAngle, 5, legLength, -(legTime+legOffset[i+2]), 3);
     }
+    
+    //Locomotion
+    topSpeed = 30;
+    
   }
   
   void update(){
@@ -93,9 +108,38 @@ class Ant extends Creature{
       dirSwitch = dirSwitch*-1;
     }    
     
-    applyForce(new Vec2(map(noise(tx),0,1,-6,6),map(noise(ty),0,1,-6,6)));
-    tx+= 0.005f;
-    ty+= 0.005f;
+    //Vec2 dir = new Vec2(map(noise(tx),0,1,-1,1),map(noise(ty),0,1,-1,1));
+    //dir.normalize();
+    //applyForce(dir.mul(20));
+    
+    applyForce(new Vec2(map(noise(tx),0,1,-8,8),map(noise(ty),0,1,-8,8)));
+    ArrayList<Object> near = findNear(Ant.class,1);
+    
+    separate(near);
+    
+    if(foundFood == null){
+      ArrayList<Object> nearFood = findNear(Food.class,2);
+      float dist = -1;
+      float distBtwn;
+      for(Object o : nearFood){
+        distBtwn = Tools.distanceBetween(getPos(),o.getPos());
+        if(dist < distBtwn){
+          dist = distBtwn;
+          foundFood = (Food)o;
+        }    
+      }
+    }else{
+      //println("Food!");
+      if(foundFood.isDestroyed)
+        foundFood=null;
+     else
+       arrive(foundFood.getPos());
+    }
+          
+    inBounds();
+    
+    tx+= 0.01f;
+    ty+= 0.01f;
   }
   
   void display(){
@@ -111,5 +155,11 @@ class Ant extends Creature{
    
     popMatrix();
     
+  }
+  
+  void destroy(){
+    home.currentAnts--;
+    println("Ants: " + home.currentAnts);
+    super.destroy();
   }
 }

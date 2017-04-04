@@ -1,4 +1,5 @@
 class Creature extends Edible {
+  static final float HUNGER_RATE = 0.01;  
   //PVector acceleration;
   //PVector velocity;
 
@@ -7,6 +8,8 @@ class Creature extends Edible {
   float acelSpeed = 1;
   float topSpeed, topForce;
   float mass = 3;
+  float hunger = 0;
+  float maxHunger = 80;
   
   Appendage[] appendages;
   
@@ -21,6 +24,10 @@ class Creature extends Edible {
   
   
   void update(){
+     hunger+=HUNGER_RATE;
+     if(hunger>maxHunger){
+       isDestroyed=true;
+     }
      
   }
   /*
@@ -70,6 +77,10 @@ class Creature extends Edible {
   
   void applyForce(Vec2 force){
    body.applyForce(box2d.vectorPixelsToWorld(force), body.getWorldCenter());
+   Vec2 velocity = box2d.vectorWorldToPixels(body.getLinearVelocity());
+   float speed = velocity.length();
+   if (speed > topSpeed)
+     body.setLinearVelocity(box2d.vectorPixelsToWorld(velocity.mul(topSpeed / speed)));
   }
   
   //Move with precision towards a target
@@ -101,6 +112,90 @@ class Creature extends Edible {
     
   }
   
+  void separate(ArrayList<Object> creatures){
+    float desiredseparation = 20;
+    
+    Vec2 sum = new Vec2();
+    int count = 0;
+    for (Object o : creatures) {
+      Creature other = (Creature)o;
+      float d = Tools.distanceBetween(getPos(),other.getPos());
+      if ((d > 0) && (d < desiredseparation)) {
+        Vec2 diff = getPos().sub(other.getPos());
+        diff.normalize();
+
+        Tools.div(diff,d);
+        sum.addLocal(diff);
+        count++;
+ 
+      }
+    }
+    if (count > 0) {
+      Tools.div(sum,count);
+      sum.normalize();
+      sum.mulLocal(topSpeed);
+      Vec2 steer = sum.sub(getVel());
+      Tools.limit(steer,topForce);
+      applyForce(steer);
+    }
+ 
+  }
+  
+  //Keep creature in level bounds
+  void inBounds(){
+    Vec2 desired = null;
+    float d = SOFT_BORDER;
+    Vec2 p = getPos();
+    Vec2 v = getVel();
+   if (p.x < d) {
+      desired = new Vec2(topSpeed, v.y);
+    } 
+    else if(p.x > width -d) {
+      desired = new Vec2(-topSpeed, v.y);
+    } 
+
+    if (p.y < d) {
+      desired = new Vec2(v.x, topSpeed);
+    } 
+    else if (p.y > height-d) {
+      desired = new Vec2(v.x, -topSpeed);
+    } 
+
+    if (desired != null) {
+      desired.normalize();
+      desired.mulLocal(topSpeed);
+      Vec2 steer = desired.sub(v);
+      Tools.limit(steer, topForce);
+      applyForce(steer);
+    } 
+  }
+  
+  ArrayList<Object> findNear(int distance){
+    return findNear(Object.class, distance);
+  }
+  
+  ArrayList<Object> findNear(Class type, int distance){
+    int x = int(getPos().x / gridRes); 
+    int y = int (getPos().y /gridRes);
+    ArrayList<Object> found = new ArrayList<Object>();
+    for (int n = - distance; n <= distance; n++) {
+      for (int m = -distance; m <= distance; m++) {
+        if (x+n >= 0 && x+n < blC && y+m >= 0 && y+m< blR){
+            for(Object o : binlatticeGrid[x+n][y+m]){
+              if(o.getClass() == type && o != this)
+                found.add(o);
+            }           
+        }
+      }
+    }
+    
+    return found;
+  }
+  
+  Vec2 getVel(){
+    return box2d.vectorWorldToPixels(body.getLinearVelocity());
+  }
+  
   /*/Takes in a location that the creature is attracted to
   void attractedTo(Object object){
     /*PVector force = PVector.sub(object.location,location);
@@ -121,5 +216,8 @@ class Creature extends Edible {
   //Destroys the creature
   void destroy(){
    super.destroy();
+   for(Appendage a : appendages){
+     a.destroy();
+   }
   }
 }

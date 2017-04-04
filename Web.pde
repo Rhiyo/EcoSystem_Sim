@@ -92,7 +92,8 @@ class Web extends Terrain{
     if(!(object instanceof Creature)) return;
     
     Creature creature = (Creature)object;
-    
+    if(!(creature instanceof Spider))
+      creature.topSpeed = creature.topSpeed/2;
     if(creature.appendages == null) return;
     
     ArrayList<VerletMinDistanceSpring2D> parts = new ArrayList<VerletMinDistanceSpring2D>();
@@ -115,11 +116,14 @@ class Web extends Terrain{
   }
   
   void removeInside(Object o){
+    
     inside.remove(o);  
     
     println("A " + o.getClass().getSimpleName() + " is no longer in a web!");
     
     if(!(o instanceof Creature)) return;
+    if(!(o instanceof Spider))
+      ((Creature)o).topSpeed = ((Creature)o).topSpeed*2;
     if(!connectedAppendages.containsKey(o)) return;
       
       VerletMinDistanceSpring2D[] legs = connectedAppendages.get((Creature)o);

@@ -6,6 +6,8 @@ abstract class Object{
   
   PVector objColour;
   
+  boolean isDestroyed;
+  
   Object(float x, float y, float m, PVector c){
     //location = new PVector(x,y);
     mass = m;
@@ -51,5 +53,9 @@ abstract class Object{
   
   void destroy(){
     box2d.destroyBody(body);
+  }
+  
+  Vec2 getPos(){
+    return box2d.getBodyPixelCoord(body);  
   }
 }
