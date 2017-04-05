@@ -37,6 +37,7 @@ class Spider extends Creature{
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
     bd.position.set(box2d.coordPixelsToWorld(x,y));
+    
     body = box2d.createBody(bd);
     body.setUserData(this);
     
@@ -52,6 +53,7 @@ class Spider extends Creature{
     
     body.createFixture(fd);
     
+    //Abdomen
     CircleShape abdomen = new CircleShape();
     abdomen.m_radius = box2d.scalarPixelsToWorld(10);
     abdomen.m_p.set(box2d.scalarPixelsToWorld(-8),0);
@@ -105,8 +107,9 @@ class Spider extends Creature{
     //AI Behaviour
     if(target != null && web.inside.contains(target)){
       topSpeed = CHASE_SPEED;
+      
       Vec2 tPos = box2d.getBodyPixelCoord(target.body);
-      println("Finding creature!");
+      
       arrive(tPos);
       return;
     }
@@ -130,16 +133,9 @@ class Spider extends Creature{
   
   void display(){
     super.display();
-    //web.display();
-    pushMatrix();
+   
     for(Appendage a : appendages)
       a.display();
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    
-    //translate(pos.x,pos.y);
-    //rotate(-body.getAngle());
-   
-    popMatrix();
     
   }
   

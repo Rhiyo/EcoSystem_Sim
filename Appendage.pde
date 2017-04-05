@@ -1,11 +1,13 @@
 class Appendage{
-  Vec2 pos;
+  
   float angle, pAngle;
   float radius;
   float length;
   float t, tt; 
   float joints;
   float rate = 0.1;
+  
+  Vec2 pos;
   
   VerletParticle2D[] particles;
   
@@ -39,23 +41,11 @@ class Appendage{
   }
   
   void display(){
-    /*
-    pushMatrix();
-    rotate(-angle);
-    translate(0,radius);
-    
-    //Draw leg at length with number of joints to bend at
-    for(int i = 0; i < joints; i++){
-      line(sin(t)*i, i*length/joints,sin(t)*(i-1),length/joints*(i-1));
-    }
-    popMatrix();
-    */
     
     line(pos.x + cos(pAngle+angle)*radius, pos.y + sin(pAngle+angle)*radius, particles[0].x, particles[0].y);
     for(int i = 1; i < joints; i++){
       line(particles[i-1].x, particles[i-1].y, particles[i].x, particles[i].y);
     }
-    
   }
   
   void destroy(){

@@ -1,12 +1,10 @@
 class Creature extends Edible {
-  static final float HUNGER_RATE = 0.01;  
-  //PVector acceleration;
-  //PVector velocity;
-
-  //float angle;
+  static final float HUNGER_RATE = 0.01; 
+  static final float CLOSE_ENOUGH = 5;
   
   float acelSpeed = 1;
-  float topSpeed, topForce;
+  float topSpeed = 80;
+  float topForce = 100;
   float mass = 3;
   float hunger = 0;
   float maxHunger = 80;
@@ -15,72 +13,47 @@ class Creature extends Edible {
   
   Creature(float x, float y, float m, PVector c){
     super(x,y,m,c);
-    //acceleration = new PVector(0,0);
-
-    topSpeed = 80;
-    topForce = 100;
    
   }
   
   
   void update(){
-     hunger+=HUNGER_RATE;
+    
+    //Manage hunger
      if(hunger>maxHunger){
        isDestroyed=true;
      }
      
+     hunger+=HUNGER_RATE;
   }
-  /*
-  void update(){
-  
-    //Add noise force
-    PVector noiseAccel = new PVector(map(noise(noiseTime.x), 0, 1, -acelSpeed, acelSpeed),
-      map(noise(noiseTime.y), 0, 1, -acelSpeed, acelSpeed));
-    //applyForce(noiseAccel);
-    
-    /Limit Box2d velocity
-    Vec2 b2velocity = body.getLinearVelocity();
-    float speed = b2velocity.length();
-    if (speed > topSpeed)
-      body.setLinearVelocity(b2velocity.mul(topSpeed / speed));
-      
-      
-    
-
-    
-    //Update noise force
-    noiseTime.add(noiseRate);
-    
-    //Vec2D velocity = director.getVelocity();
-    /*
-    println(velocity.magnitude() + " - " + topSpeed);
-    if(velocity.magnitude() > topSpeed){
-      velocity = velocity.normalize();
-      director.clearVelocity();
-      director.addVelocity(velocity.scale(topSpeed));
-    }
-    
-  */  
   
   //Makes sure the creature stays within the bounds of the level
   float boundCheck(float check, int max){
     if(check > max){ 
       check-=max;
     }
+    
     if(check < 1){ 
       check+=max;
     }
+    
     return check;
   }
   
-  //  STEERING METHODS
+  ///
+  ///  STEERING METHODS
+  ///
   
   void applyForce(Vec2 force){
-   body.applyForce(box2d.vectorPixelsToWorld(force), body.getWorldCenter());
-   Vec2 velocity = box2d.vectorWorldToPixels(body.getLinearVelocity());
-   float speed = velocity.length();
-   if (speed > topSpeed)
-     body.setLinearVelocity(box2d.vectorPixelsToWorld(velocity.mul(topSpeed / speed)));
+    body.applyForce(box2d.vectorPixelsToWorld(force), body.getWorldCenter());
+    
+    Vec2 velocity = box2d.vectorWorldToPixels(body.getLinearVelocity());
+    
+    float speed = velocity.lengthSquared();
+    float topSpeed = this.topSpeed*this.topSpeed; //Skip squarert for performance
+    
+    if (speed > topSpeed)
+      body.setLinearVelocity(box2d.vectorPixelsToWorld(velocity.mul(topSpeed / speed)));
   }
   
   //Move with precision towards a target
@@ -88,20 +61,25 @@ class Creature extends Edible {
     
     Vec2 pos = box2d.getBodyPixelCoord(body);
     
-    float closeEnough = 5;
-    if(target.sub(pos).length() < closeEnough)
+    if(target.sub(pos).length() < CLOSE_ENOUGH)
       return;
-    //The cut off distance of going full speed
-    float cutOff = 100;
+      
+    //The cut off distance of going full speed (hardcode squared)
+    float cutOff = 1000;
     
     Vec2 desired = target.sub(pos);
     
-    float d = desired.length();
+    float d = desired.lengthSquared();
+    
     desired.normalize();
-    if(d<cutOff){
+    
+    if(d < cutOff){
       float m = map(d,0,cutOff,0,topSpeed);
+      
       desired.mulLocal(m);
-    }else{
+    }
+    else
+    {
       desired.mulLocal(topSpeed);
     }
     
@@ -116,26 +94,37 @@ class Creature extends Edible {
     float desiredseparation = 20;
     
     Vec2 sum = new Vec2();
+    
     int count = 0;
+    
     for (Object o : creatures) {
       Creature other = (Creature)o;
+      
       float d = Tools.distanceBetween(getPos(),other.getPos());
+      
       if ((d > 0) && (d < desiredseparation)) {
+        
         Vec2 diff = getPos().sub(other.getPos());
         diff.normalize();
 
         Tools.div(diff,d);
+        
         sum.addLocal(diff);
+        
         count++;
  
       }
     }
+    
     if (count > 0) {
       Tools.div(sum,count);
+      
       sum.normalize();
       sum.mulLocal(topSpeed);
+
       Vec2 steer = sum.sub(getVel());
       Tools.limit(steer,topForce);
+      
       applyForce(steer);
     }
  
@@ -143,11 +132,13 @@ class Creature extends Edible {
   
   //Keep creature in level bounds
   void inBounds(){
+    
     Vec2 desired = null;
+    
     float d = SOFT_BORDER;
     Vec2 p = getPos();
     Vec2 v = getVel();
-   if (p.x < d) {
+    if (p.x < d) {
       desired = new Vec2(topSpeed, v.y);
     } 
     else if(p.x > width -d) {
@@ -164,8 +155,11 @@ class Creature extends Edible {
     if (desired != null) {
       desired.normalize();
       desired.mulLocal(topSpeed);
+      
       Vec2 steer = desired.sub(v);
+      
       Tools.limit(steer, topForce);
+      
       applyForce(steer);
     } 
   }
@@ -177,12 +171,14 @@ class Creature extends Edible {
   ArrayList<Object> findNear(Class type, int distance){
     int x = int(getPos().x / gridRes); 
     int y = int (getPos().y /gridRes);
+    
     ArrayList<Object> found = new ArrayList<Object>();
+    
     for (int n = - distance; n <= distance; n++) {
       for (int m = -distance; m <= distance; m++) {
         if (x+n >= 0 && x+n < blC && y+m >= 0 && y+m< blR){
             for(Object o : binlatticeGrid[x+n][y+m]){
-              if(o.getClass() == type && o != this)
+              if(o.getClass() == type && o != this && o.isDestroyed == false)
                 found.add(o);
             }           
         }

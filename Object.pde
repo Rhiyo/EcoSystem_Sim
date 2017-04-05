@@ -1,5 +1,6 @@
 abstract class Object{
   Body body;
+  
   PVector location;
   
   float mass;
@@ -9,29 +10,29 @@ abstract class Object{
   boolean isDestroyed;
   
   Object(float x, float y, float m, PVector c){
-    //location = new PVector(x,y);
     mass = m;
     objColour = c.get();
- 
+    
   }
   
   void update(){
   }
   
-  float getAngle(){
-    return atan2(box2d.vectorWorldToPixels(body.getLinearVelocity()).y,box2d.vectorWorldToPixels(body.getLinearVelocity()).x);
-  }
-  
   void display(){
-    Vec2 pos = box2d.getBodyPixelCoord(body);
+    Vec2 pos = getPos();
+    
     pushMatrix();
+    
     translate(pos.x, pos.y);
-    //println(-body.getAngle());
     rotate(getAngle());
+    
     stroke(objColour.x,objColour.y,objColour.z);
     fill(objColour.x,objColour.y,objColour.z);
     
     Fixture f = body.getFixtureList();
+    
+    Vec2 shapePos = null;
+    
     while(f != null)
     {
       switch (f.getType())
@@ -39,8 +40,11 @@ abstract class Object{
         case CIRCLE:
         {
           CircleShape shape = (CircleShape)f.getShape();
+          
           float r = box2d.scalarWorldToPixels(shape.m_radius);
-          Vec2 shapePos = box2d.vectorWorldToPixels(shape.m_p);
+          
+          shapePos = box2d.vectorWorldToPixels(shape.m_p);
+          
           ellipse(shapePos.x,shapePos.y,r*2,r*2);
         }
       }
@@ -53,9 +57,22 @@ abstract class Object{
   
   void destroy(){
     box2d.destroyBody(body);
+    locInGrid().remove(this);
   }
   
   Vec2 getPos(){
     return box2d.getBodyPixelCoord(body);  
+  }
+  
+  float getAngle(){
+    return atan2(box2d.vectorWorldToPixels(body.getLinearVelocity()).y,box2d.vectorWorldToPixels(body.getLinearVelocity()).x);
+  }
+  
+  ArrayList<Object> locInGrid(){
+    Vec2 loc = getPos();
+    
+    if(!(loc.x < 0 || loc.x > width || loc.y < 0 || loc.y > height))
+      return binlatticeGrid[int(loc.x / gridRes)][int (loc.y /gridRes)];
+    return null;
   }
 }

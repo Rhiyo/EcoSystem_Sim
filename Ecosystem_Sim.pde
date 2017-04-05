@@ -16,6 +16,11 @@ Follows a curve by moving in a wave like motion
 Fish:
 Moves on really long smoothed curves.
 
+Optimisations:
+-Turn mag into magsq
+-Precalculate cos and sin
+-Remove unncessary creation of vectors outside of loops
+
 */
 import java.util.*; 
 import shiffman.box2d.*;
@@ -25,34 +30,41 @@ import toxi.physics2d.behaviors.*;
 import toxi.geom.*;
 import g4p_controls.*;
 
+//Constants
 public static final PVector FOOD_COLOUR = new PVector(255,165,0);
 public static final PVector HERB_COLOUR = new PVector(0,255,0);
 public static final PVector CARN_COLOUR = new PVector(255,0,0);
 public static final float SOFT_BORDER = 40;
-Box2DProcessing box2d;
-VerletPhysics2D physics;
 
+//Program Specifications
 int width = 1024;
 int height = 768;
-int noiseTimeStart = 0;
-float creatureScale = 1;
+int bg[][];
+
+float perlin; //So creatures get different numbers
+
 Random random;
 
-float currentFoodTime;
-float creatureSpawnRate = 5;
-float currentCarnivore = 2.5f;
-float currentHerbivore;
+//Global Game vaariables
+int blC, blR;
+
+float creatureScale = 1;
+float gridRes;
 
 ArrayList<Object> worldObjs;
 ArrayList<Terrain> terrain;
 ArrayList<ParticleSystem> systems;
-
 ArrayList<Object>[][] binlatticeGrid;
-int blC, blR;
-float gridRes;
+
+Box2DProcessing box2d;
+VerletPhysics2D physics;
+
+//Rates
+float creatureSpawnRate = 5;
+float foodTime;
 
 //Timers
-float foodTime;
+float currentFoodTime;
 
 //UI
 GWindow wdwControls;
@@ -64,13 +76,9 @@ GButton btnDebug;
 //Testing Variables
 TestCreature tc;
 
-//Simulation vars
+//Simulation States
 boolean playing = true;
 boolean debug = false;
-
-float perlin; //So creatures get different numbers
-
-int bg[][];
 
 //Temp
 color flowerColour;
@@ -83,16 +91,21 @@ void settings() {
 
 void setup(){
   background(220);
+  
   random = new Random();
+  
   worldObjs = new ArrayList<Object>();
   terrain = new ArrayList<Terrain>();
   systems = new ArrayList<ParticleSystem>();
   
   //Bin-lattice setup
   gridRes = 64;
+  
   blC = (int)Math.ceil(width/gridRes);
   blR = (int)Math.ceil(height/gridRes);
+  
   binlatticeGrid = new ArrayList[blC][blR];
+  
   for (int i = 0; i < blC; i++) {
     for (int j = 0; j < blR; j++) {
       binlatticeGrid[i][j] = new ArrayList<Object>();
@@ -107,50 +120,48 @@ void setup(){
   
   //Toxiclibs
   physics = new VerletPhysics2D();
-  physics.setWorldBounds(new Rect(0,0,width,height));
-  
-  //Toxi cliubs set up
-  physics = new VerletPhysics2D();
-  physics.setWorldBounds(new Rect(0,0,width,height));
-  spawnSpider();  
+  physics.setWorldBounds(new Rect(0,0,width,height));  
   
   //GUI
   createGUI();
   
-  //Test declarations
-  tc = new TestCreature(0,0,1, new PVector(255,0,0));
-  
-  worldObjs.add(tc);
-  
-  AntHill antHill = new AntHill(random(width/5,width*4/5),random(height/5,4*height/5));
-  terrain.add(antHill);
-  terrain.add(new AntHill(random(width/5,width*4/5),random(height/5,4*height/5)));
-  
-  //noiseDetail(1,0.5);
+  //BG Setup
   float xoff = 0.0;
-  bg = new int[width][height]; 
+  
+  bg = new int[width][height];
+  
   for (int x = 0; x < width; x++) {
     float yoff = 0.0;
  
     for (int y = 0; y < height; y++) {
-
       float bright = noise(xoff,yoff);
 
       if(bright < 0.3){
         bg[x][y] = color(40*bright,30*bright,10*bright);  
-      }else
+      }
+      else
         bg[x][y] = color(30*bright,40*bright,10*bright);
-
       yoff += 0.009;
     }
     xoff += 0.009;
   }
   
+  //Simulation Spawning
+  spawnSpider();
+  
+  AntHill antHill = new AntHill(random(width/5,width*4/5),random(height/5,4*height/5));
+  terrain.add(antHill);
+  terrain.add(new AntHill(random(width/5,width*4/5),random(height/5,4*height/5)));
+  
+  
+  //Test declarations
+  tc = new TestCreature(0,0,1, new PVector(255,0,0));
+  worldObjs.add(tc);
+  
   flowerColour = color(random(85,170),random(85,170),random(85,170));
 }
 
 void draw(){
-  //background(20);
   
   //Draw Background with Noise
   loadPixels();
@@ -164,69 +175,64 @@ void draw(){
   }
   updatePixels();
   
-  //Set up bin lattice
-  for (int i = 0; i < blC; i++) {
-    for (int j = 0; j < blR; j++) {
-      binlatticeGrid[i][j].clear();
-    }
-  }
-    
-  for (Object o : worldObjs) {
-    int x = int(o.getPos().x / gridRes); 
-    int y = int (o.getPos().y /gridRes);
-    // It goes in 9 cells, i.e. every Thing is tested against other Things in its cell
-    // as well as its 8 neighbors 
-    //for (int n = -1; n <= 1; n++) {
-      //for (int m = -1; m <= 1; m++) {
-        //if (x+n >= 0 && x+n < blC && y+m >= 0 && y+m< blR)
-        if(o.getPos().x < 0 || o.getPos().x > width || o.getPos().y < 0 || o.getPos().y > height){
-          //o.isDestroyed = true;
-        }
-        else
-          binlatticeGrid[x][y].add(o);
-      //}
-    //}
-  }
-  
   //Update if playing
   if(playing){
+    
     for(Terrain t : terrain)
       t.update();
+    
+    //Set up bin lattice
+    clearBinlatticeGrid();
+      
+    for (Object o : worldObjs) {
+      ArrayList<Object> gridList = o.locInGrid();
+      if(gridList != null)
+        o.locInGrid().add(o);  
+    }
+    
+    //Update physics worlds
     box2d.step();
     physics.update();
+    
+    //Update timers
     foodTime+= 0.01;
   }
   
+  //Add new food
   if(foodTime > Food.SPAWN_RATE){
-    worldObjs.add(new Food(random(SOFT_BORDER,width-SOFT_BORDER),random(SOFT_BORDER,height-SOFT_BORDER), 1, new PVector(255,255,0)));
+    spawnFood();
     foodTime -= Food.SPAWN_RATE;
   }
+  
+  
+  
+  //Display terrain under objects
+  for(Terrain t : terrain)
+    t.display();
   
   //Iterate through objects to update and destroy
   Iterator<Object> it = worldObjs.iterator();
   
-  for(Terrain t : terrain)
-    t.display();
-  
+  Vec2 creatureLoc;
+
   while(it.hasNext()){
-    Object object = it.next();
-    
+    Object object = it.next();    
     //Check to see if eaten
-    if(object.isDestroyed){
-      //if(object instanceof Creature){ 
+    if(object.isDestroyed){ 
       
-        
-        ParticleSystem ps = new ParticleSystem();
-        Vec2 loc = box2d.getBodyPixelCoord(object.body);
-        ps.origin.set(loc.x,loc.y);
-        systems.add(ps);
-        for(int i = 0;i<=25;i++)
-          ps.addParticle();
-        object.destroy();
-        it.remove(); 
-        continue;
-      //}
+      creatureLoc = object.getPos();
       
+      ParticleSystem ps = new ParticleSystem();
+      ps.origin.set(creatureLoc.x,creatureLoc.y);
+      
+      systems.add(ps);
+      for(int i = 0;i<=25;i++)
+        ps.addParticle();
+      
+      object.destroy();
+      it.remove(); 
+      
+      continue;
     }
     
     //If  not destroyed, update and display.
@@ -238,12 +244,14 @@ void draw(){
   
   //Run custom simple particleSystem
   Iterator<ParticleSystem> itps = systems.iterator();
+  
+  ParticleSystem ps = null;
+  
   while(itps.hasNext()){
-    ParticleSystem ps = itps.next();
+    ps = itps.next();
     ps.run();
     
     if(ps.isEmpty()){
-      println("PS removed!");
       itps.remove();
     }
   }
@@ -266,12 +274,14 @@ void draw(){
   if(!debug)
     return;
     
-  //Draw bin lattice
-  
+  //Draw bin-lattice
   stroke(255,120,120);
   fill(255,120,120);
+  
   textSize(20);
-  float thirdRes = gridRes/2;
+  
+  float halfRes = gridRes/2;
+  
   for (int i = 0; i < blC; i++) {
     if(i!=blC-1)
       line((i+1)*gridRes, 0, (i+1)*gridRes, height);
@@ -280,11 +290,13 @@ void draw(){
       if(i==0 && j!= blR-1)
         line(0, (j+1)*gridRes, width, (j+1)*gridRes);
              
-      text(binlatticeGrid[i][j].size(),i*gridRes+thirdRes,j*gridRes+thirdRes);
+      text(binlatticeGrid[i][j].size(),i*gridRes+halfRes,j*gridRes+halfRes);
     }
   } 
   
+  //Draw terrain debug
   for(Terrain t : terrain){
+    
     if(t instanceof Web){
       Web w = (Web)t;
       textSize(36);
@@ -292,11 +304,13 @@ void draw(){
       text(w.inside.size(), w.pos.x, w.pos.y);  
     }
   }
-  
 }
 
+///
+/// GUI
+///
+
 void createGUI(){
-  
   wdwControls =  GWindow.getWindow(this, "My Window", 100, 50, 480, 70, JAVA2D);
   btnPlay = new GButton(wdwControls, 10, 10, 50, 50, ">");
   btnReset = new GButton(wdwControls, 70, 10, 50, 50, "Reset");
@@ -326,37 +340,49 @@ void handleButtonEvents(GButton button, GEvent event) {
 void resetSimulation(){
   //purgeCreatures();
   worldObjs.clear();
+  terrain.clear();
+  systems.clear();
+  clearBinlatticeGrid();
 }
+
+private void clearBinlatticeGrid(){
+  for (int i = 0; i < blC; i++) {
+    for (int j = 0; j < blR; j++) {
+      binlatticeGrid[i][j].clear();
+    }
+  }
+}
+
+///
+///OBJECT HANDLING
+///
 
 //destroys all creatures
 void purgeCreatures(){
-  
+  for(Object o : worldObjs){
+    if(o instanceof Creature){
+      o.isDestroyed = true;  
+    }
+  }
 }
-
 
 //Spawns one food item
 void spawnFood(){
- Food foodObj = new Food(random(width),random(height), 1, FOOD_COLOUR); 
- worldObjs.add(foodObj);
+  println("Spawning: Food");
+  worldObjs.add(new Food(random(SOFT_BORDER,width-SOFT_BORDER),random(SOFT_BORDER,height-SOFT_BORDER), 1, FOOD_COLOUR));
 }
 
 //Spawns a Spider
 void spawnSpider(){
+  println("Spawning: Spider");
   Spider spider = new Spider(random(width/5,width*4/5),random(height/5,4*height/5),3,HERB_COLOUR);
-  
-  //butterfly.noiseRate = new PVector(0.01, 0.01);
+   
   worldObjs.add(spider);
-  //worldObjs.add(ant);
 }
 
-//Gets  next starting point for noise, so each dimension starts differently.
-int getN(){
-  int noiseTime = noiseTimeStart;
-  noiseTimeStart+= 10000;
-  return noiseTime;
-}
-
-//BOX 2D methods
+///
+///BOX 2D
+///
 
 void beginContact(Contact cp){
   Fixture f1 = cp.getFixtureA();
@@ -414,6 +440,5 @@ void checkEndContact(Body o1, Body o2){
 }
 
 float getPerlin(){
-  
   return perlin+=1000;
 }

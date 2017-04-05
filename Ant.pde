@@ -15,16 +15,23 @@
 
 class Ant extends Creature{
   
-  float[] legOffset;
-  float legTime = 0;
-  float tx, ty;
   AntHill home;
   
+  //Legs
+  float[] legOffset;
+  float legTime = 0;
+  
+  //Perlin movement
+  float tx, ty;
+  
+  //AI
   Food foundFood;
   
   Ant(float x, float y, float m, PVector c, AntHill home){
     super(x,y,m,c);
+    
     maxHunger = maxHunger/2;
+    
     tx = getPerlin();
     ty = getPerlin();
     
@@ -34,9 +41,11 @@ class Ant extends Creature{
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
     bd.position.set(box2d.coordPixelsToWorld(x,y));
+    
     body = box2d.createBody(bd);
     body.setUserData(this);
     
+    //Thorax
     CircleShape thorax = new CircleShape();
     thorax.m_radius = box2d.scalarPixelsToWorld(3);
     
@@ -48,6 +57,7 @@ class Ant extends Creature{
     
     body.createFixture(fd);
     
+    //Head
     CircleShape head = new CircleShape();
     head.m_radius = box2d.scalarPixelsToWorld(4);
     head.m_p.set(box2d.scalarPixelsToWorld(+6),0);
@@ -60,6 +70,7 @@ class Ant extends Creature{
     
     body.createFixture(fd);
     
+    //Abdomen
     CircleShape abdomen = new CircleShape();
     abdomen.m_radius = box2d.scalarPixelsToWorld(5);
     abdomen.m_p.set(box2d.scalarPixelsToWorld(-7),0);
@@ -85,6 +96,7 @@ class Ant extends Creature{
     
     float legAngle = PI/4;
     float legLength = 6;
+    
     for(int i = 1; i < 4; i++){
       appendages[i-1] = new Appendage(box2d.getBodyPixelCoord(body), i*legAngle, 5, legLength, legTime+legOffset[i-1], 3);
       appendages[i+2] = new Appendage(box2d.getBodyPixelCoord(body), -i*legAngle, 5, legLength, -(legTime+legOffset[i+2]), 3);
@@ -98,29 +110,28 @@ class Ant extends Creature{
   void update(){
     super.update();
     
-    int dirSwitch = 1;
+    //Move legs
     for(Appendage a : appendages){
-      a.rate = dirSwitch*0.006*box2d.vectorWorldToPixels(body.getLinearVelocity()).length();
+      a.rate = 0.006*box2d.vectorWorldToPixels(body.getLinearVelocity()).length();
       a.pos = box2d.getBodyPixelCoord(body);
       a.angle = getAngle();
       a.update();
-      
-      dirSwitch = dirSwitch*-1;
     }    
     
-    //Vec2 dir = new Vec2(map(noise(tx),0,1,-1,1),map(noise(ty),0,1,-1,1));
-    //dir.normalize();
-    //applyForce(dir.mul(20));
-    
+    //Move with perlin
     applyForce(new Vec2(map(noise(tx),0,1,-8,8),map(noise(ty),0,1,-8,8)));
     ArrayList<Object> near = findNear(Ant.class,1);
     
+    //Separate from others
     separate(near);
     
+    //AI
     if(foundFood == null){
       ArrayList<Object> nearFood = findNear(Food.class,2);
+      
       float dist = -1;
       float distBtwn;
+      
       for(Object o : nearFood){
         distBtwn = Tools.distanceBetween(getPos(),o.getPos());
         if(dist < distBtwn){
@@ -128,38 +139,37 @@ class Ant extends Creature{
           foundFood = (Food)o;
         }    
       }
-    }else{
-      //println("Food!");
-      if(foundFood.isDestroyed)
-        foundFood=null;
+      
+    }
+    else
+    {
+      
+     if(foundFood.isDestroyed)
+       foundFood=null;
      else
        arrive(foundFood.getPos());
     }
-          
+             
     inBounds();
     
+    //Update perlin
     tx+= 0.01f;
     ty+= 0.01f;
   }
   
   void display(){
     super.display();
-    //web.display();
+    
     pushMatrix();
+    
     for(Appendage a : appendages)
       a.display();
-    //Vec2 pos = box2d.getBodyPixelCoord(body);
-    
-    //translate(pos.x,pos.y);
-    //rotate(-body.getAngle());
    
-    popMatrix();
-    
+    popMatrix();    
   }
   
   void destroy(){
     home.currentAnts--;
-    println("Ants: " + home.currentAnts);
     super.destroy();
   }
 }

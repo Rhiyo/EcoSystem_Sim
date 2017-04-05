@@ -1,9 +1,11 @@
 class Web extends Terrain{
   Vec2 pos;
   Vec2 detail;
+  
   float length, sLength;
   float squish;
   float variance;
+  
   VerletParticle2D seedParticle;
   VerletParticle2D[][] particles;
   
@@ -23,6 +25,7 @@ class Web extends Terrain{
     BodyDef bd = new BodyDef();
     bd.type = BodyType.STATIC;
     bd.position.set(box2d.coordPixelsToWorld(pos.x,pos.y));
+    
     bounds = box2d.createBody(bd);
     bounds.setUserData(this);
     
@@ -38,17 +41,17 @@ class Web extends Terrain{
     particles = new VerletParticle2D[int(detail.y)][int(detail.x)];
     
     seedParticle = new VerletParticle2D(pos.x,pos.y);
+    
     physics.addParticle(seedParticle);
     
     float webStr = 1.5;
+    
     for(int i = 0; i < detail.y;i++){
       for(int j = 0; j < detail.x;j++){
         sLength = (j%2==1) ? length : length*squish;
         
         Vec2 ranVar = new Vec2(random(-(2*PI/detail.x*variance), 2*PI/detail.x*variance),
           random(-((sLength/detail.y)*variance),(sLength/detail.y)*variance));
-        
-        
         
         particles[i][j] = new VerletParticle2D(
           pos.x+cos((j*2*PI/detail.x)+ranVar.x)*((i+1)*(sLength/detail.y)+ranVar.y),
@@ -58,24 +61,34 @@ class Web extends Terrain{
         
         VerletParticle2D cI;
         VerletParticle2D cJ;
+        
         cI = (i == 0)? seedParticle : particles[i-1][j];
         cJ = particles[i][j];
+        
         VerletSpring2D spring = new VerletSpring2D(cI,cJ,(new Vec2(cJ.x-cI.x,cJ.y-cI.y)).length(),webStr);
+        
         physics.addSpring(spring);
+        
         if(i == detail.y - 1){
           particles[i][j].lock();
           continue;
         }
+        
         if(j == 0) continue;
+        
         cI = particles[i][j-1];
+        
         spring = new VerletSpring2D(cI,cJ,(new Vec2(cJ.x-cI.x,cJ.y-cI.y)).length(),webStr);
+        
         physics.addSpring(spring);
         
         if(j != detail.x - 1)
           continue;
           
         cI = particles[i][0];  
+        
         spring = new VerletSpring2D(cI,cJ,(new Vec2(cJ.x-cI.x,cJ.y-cI.y)).length(),webStr);
+        
         physics.addSpring(spring);
        
       }
