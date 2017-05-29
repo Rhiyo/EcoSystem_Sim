@@ -10,7 +10,7 @@ class Food extends Edible{
     
     //Build body using Box2D
     BodyDef bd = new BodyDef();
-    bd.type = BodyType.STATIC;
+    bd.type = BodyType.DYNAMIC;
     bd.position.set(box2d.coordPixelsToWorld(x,y));
     
     body = box2d.createBody(bd);
@@ -22,7 +22,7 @@ class Food extends Edible{
     FixtureDef fd = new FixtureDef();
     fd.shape= circle;
     fd.density = 1;
-    fd.friction = 1;
+    fd.friction = 5;
     fd.restitution = 1f;
     
     body.createFixture(fd);

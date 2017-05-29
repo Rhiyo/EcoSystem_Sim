@@ -21,6 +21,9 @@ class Ant extends Creature{
   float[] legOffset;
   float legTime = 0;
   
+  
+  float baseTopSpeed;
+  
   //Perlin movement
   float tx, ty;
   
@@ -104,7 +107,7 @@ class Ant extends Creature{
     
     //Locomotion
     topSpeed = 30;
-    
+    baseTopSpeed = 30;
   }
   
   void update(){
@@ -122,11 +125,18 @@ class Ant extends Creature{
     applyForce(new Vec2(map(noise(tx),0,1,-8,8),map(noise(ty),0,1,-8,8)));
     ArrayList<Object> near = findNear(Ant.class,1);
     
+    //Calculate confidence
+    confidence = (near.size()) * 0.1;
+    if(confidence > 0.8)
+      confidence = 0.8 + (1 - 1/near.size()-7);
+    
+    topSpeed = baseTopSpeed * (1 + confidence);
+    
     //Separate from others
     separate(near);
     
     //AI
-    if(foundFood == null){
+    if(foundFood == null && near.size() <= 5){
       ArrayList<Object> nearFood = findNear(Food.class,2);
       
       float dist = -1;
@@ -142,9 +152,8 @@ class Ant extends Creature{
       
     }
     else
-    {
-      
-     if(foundFood.isDestroyed)
+    { 
+     if(foundFood.isDestroyed || near.size() > 5)
        foundFood=null;
      else
        arrive(foundFood.getPos());

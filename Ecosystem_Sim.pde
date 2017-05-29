@@ -43,6 +43,11 @@ int bg[][];
 
 float perlin; //So creatures get different numbers
 
+//Wind
+PVector wind;
+PVector currentWind;
+float windRate = 0.01;
+
 Random random;
 
 //Global Game vaariables
@@ -88,16 +93,17 @@ void settings() {
   
 }
 
+Tree testTree;
 
 void setup(){
   background(220);
   
+  testTree = new Tree(width/2, height/2);
   random = new Random();
   
   worldObjs = new ArrayList<Object>();
   terrain = new ArrayList<Terrain>();
   systems = new ArrayList<ParticleSystem>();
-  
   //Bin-lattice setup
   gridRes = 64;
   
@@ -111,7 +117,7 @@ void setup(){
       binlatticeGrid[i][j] = new ArrayList<Object>();
     }
   }
-  
+    
   //Box2D set up
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
@@ -122,6 +128,9 @@ void setup(){
   physics = new VerletPhysics2D();
   physics.setWorldBounds(new Rect(0,0,width,height));  
   
+  //Wind
+  wind = new PVector(getPerlin(), getPerlin());
+  currentWind = new PVector();
   //GUI
   createGUI();
   
@@ -159,6 +168,8 @@ void setup(){
   worldObjs.add(tc);
   
   flowerColour = color(random(85,170),random(85,170),random(85,170));
+  
+  worldObjs.add(new Shellman(100,100, 1, FOOD_COLOUR));
 }
 
 void draw(){
@@ -174,6 +185,12 @@ void draw(){
     }
   }
   updatePixels();
+  
+  //Update wind
+  wind.x = wind.x+windRate;
+  wind.y = wind.y+windRate;
+  currentWind.x = map(noise(wind.x),0,1,-1,1);
+  currentWind.y = map(noise(wind.y),0,1,-1,1);
   
   //Update if playing
   if(playing){
@@ -241,6 +258,9 @@ void draw(){
         
     object.display();
   }
+  
+  testTree.update();
+  testTree.display();
   
   //Run custom simple particleSystem
   Iterator<ParticleSystem> itps = systems.iterator();

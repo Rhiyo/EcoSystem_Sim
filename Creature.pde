@@ -8,6 +8,7 @@ class Creature extends Edible {
   float mass = 3;
   float hunger = 0;
   float maxHunger = 80;
+  float confidence;
   
   Appendage[] appendages;
   
