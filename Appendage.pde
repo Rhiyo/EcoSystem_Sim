@@ -11,7 +11,7 @@ class Appendage{
   
   VerletParticle2D[] particles;
   
-  //Starting radius away from body
+  //Radius = Starting radius away from body
   Appendage(Vec2 pos, float angle, float radius,float length, float t, int joints){
     
     this.pos = pos;

@@ -58,12 +58,12 @@ class Creature extends Edible {
   }
   
   //Move with precision towards a target
-  void arrive(Vec2 target){
+  boolean arrive(Vec2 target){
     
     Vec2 pos = box2d.getBodyPixelCoord(body);
     
     if(target.sub(pos).length() < CLOSE_ENOUGH)
-      return;
+      return true;
       
     //The cut off distance of going full speed (hardcode squared)
     float cutOff = 1000;
@@ -89,6 +89,7 @@ class Creature extends Edible {
     
     applyForce(steer);
     
+    return false;
   }
   
   void separate(ArrayList<Object> creatures){
